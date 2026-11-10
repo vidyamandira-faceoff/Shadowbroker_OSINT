@@ -16,6 +16,16 @@ echo ""
 
 # Check for stale docker-compose.yml from pre-migration clones
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+if [ -d "$SCRIPT_DIR/.tools/bin" ]; then
+    export PATH="$SCRIPT_DIR/.tools/bin:$PATH"
+fi
+if [ -f "$SCRIPT_DIR/.tools/python/cpython-3.10.22-linux-x86_64-gnu/bin/python3.10" ]; then
+    export UV_PYTHON="$SCRIPT_DIR/.tools/python/cpython-3.10.22-linux-x86_64-gnu/bin/python3.10"
+fi
+if [ -f "$SCRIPT_DIR/backend/venv/bin/python3" ]; then
+    PYTHON_CMD="$SCRIPT_DIR/backend/venv/bin/python3"
+fi
+
 if [ -f "$SCRIPT_DIR/docker-compose.yml" ] && grep -q '^\s*build:' "$SCRIPT_DIR/docker-compose.yml" 2>/dev/null; then
     echo ""
     echo "================================================================"
@@ -41,7 +51,11 @@ echo "[*] Found Node.js $(node --version)"
 
 # Check for Python 3
 PYTHON_CMD=""
-if command -v python3 &> /dev/null; then
+if [ -f "$SCRIPT_DIR/backend/venv/bin/python3" ]; then
+    PYTHON_CMD="$SCRIPT_DIR/backend/venv/bin/python3"
+elif [ -f "$SCRIPT_DIR/.tools/python/cpython-3.10.22-linux-x86_64-gnu/bin/python3.10" ]; then
+    PYTHON_CMD="$SCRIPT_DIR/.tools/python/cpython-3.10.22-linux-x86_64-gnu/bin/python3.10"
+elif command -v python3 &> /dev/null; then
     PYTHON_CMD="python3"
 elif command -v python &> /dev/null; then
     PYTHON_CMD="python"
@@ -144,7 +158,7 @@ if command -v uv &> /dev/null; then
     fi
     echo "[*] Installing Python dependencies via UV (fast)..."
     cd "$SCRIPT_DIR"
-    UV_PROJECT_ENVIRONMENT="$SCRIPT_DIR/backend/$VENV_DIR" uv sync --frozen --no-dev
+    UV_PROJECT_ENVIRONMENT="$SCRIPT_DIR/backend/$VENV_DIR" uv sync --frozen --no-dev --all-packages
     cd "$SCRIPT_DIR/backend"
 else
     echo "[*] UV not found, using pip (install UV for faster installs: https://docs.astral.sh/uv/)"
@@ -248,7 +262,7 @@ if [ ! -d "node_modules" ]; then
     FRONTEND_DEPS_OK=0
 fi
 if [ "$FRONTEND_DEPS_OK" -eq 1 ]; then
-    node -e "require.resolve('next/dist/bin/next',{paths:['.']});require.resolve('lucide-react',{paths:['.']});require.resolve('maplibre-gl',{paths:['.']});require.resolve('@swc/helpers/_/_interop_require_default',{paths:['.']})" >/dev/null 2>&1 || FRONTEND_DEPS_OK=0
+    node -e "require.resolve('next/dist/bin/next',{paths:['.']});require.resolve('lucide-react',{paths:['.']});require.resolve('maplibre-gl/package.json',{paths:['.']});require.resolve('@swc/helpers/_/_interop_require_default',{paths:['.']})" >/dev/null 2>&1 || FRONTEND_DEPS_OK=0
 fi
 if [ "$FRONTEND_DEPS_OK" -eq 0 ]; then
     echo "[*] Frontend install is missing required packages. Repairing with npm ci..."

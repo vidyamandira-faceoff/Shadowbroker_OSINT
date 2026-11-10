@@ -164,7 +164,7 @@ if errorlevel 1 (
 echo [*] Installing Python dependencies via UV (fast)...
 cd /d "%ROOT%"
 set "UV_PROJECT_ENVIRONMENT=%ROOT%\backend\%VENV_DIR%"
-uv sync --frozen --no-dev
+uv sync --frozen --no-dev --all-packages
 set "UV_PROJECT_ENVIRONMENT="
 if %errorlevel% neq 0 goto :dep_fail
 cd /d "%ROOT%\backend"
@@ -282,7 +282,7 @@ echo [*] Setting up frontend...
 cd /d "%ROOT%\frontend"
 set "FRONTEND_DEPS_OK=1"
 if not exist "node_modules\" set "FRONTEND_DEPS_OK=0"
-if "%FRONTEND_DEPS_OK%"=="1" node -e "require.resolve('next/dist/bin/next',{paths:['.']});require.resolve('lucide-react',{paths:['.']});require.resolve('maplibre-gl',{paths:['.']});require.resolve('@swc/helpers/_/_interop_require_default',{paths:['.']})" >nul 2>&1
+if "%FRONTEND_DEPS_OK%"=="1" node -e "require.resolve('next/dist/bin/next',{paths:['.']});require.resolve('lucide-react',{paths:['.']});require.resolve('maplibre-gl/package.json',{paths:['.']});require.resolve('@swc/helpers/_/_interop_require_default',{paths:['.']})" >nul 2>&1
 if "%FRONTEND_DEPS_OK%"=="1" if errorlevel 1 set "FRONTEND_DEPS_OK=0"
 if "%FRONTEND_DEPS_OK%"=="0" (
     echo [*] Frontend install is missing required packages. Repairing with npm ci...

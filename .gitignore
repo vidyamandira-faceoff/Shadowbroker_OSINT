@@ -312,3 +312,5 @@ backend/tests/test_carrier_tracker_region_centers.py
 
 # Generated from the installed MapLibre dependency by next.config.ts
 /frontend/public/maplibre-gl-worker.mjs
+
+/.tools
